@@ -17,6 +17,7 @@
   "[python]": {
     "editor.formatOnSave": false,
     "editor.defaultFormatter": "charliermarsh.ruff"
-  }
+  },
+  "python.languageServer": "None"
 }
 
