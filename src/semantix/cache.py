@@ -102,7 +102,9 @@ class SemantixCache:
 
         return results
 
-    def set_batch(self, items: List[str], instruction: str, results: Dict[str, Any]) -> None:
+    def set_batch(
+        self, items: List[str], instruction: str, results: Dict[str, Any]
+    ) -> None:
         """
         Save results to the cache.
 
