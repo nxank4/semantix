@@ -56,7 +56,9 @@ def sample_pandas_df() -> Any:
     )
 
 
-def test_process_column_polars_basic(sample_polars_df: Any, mock_inference_engine: Any) -> None:
+def test_process_column_polars_basic(
+    sample_polars_df: Any, mock_inference_engine: Any
+) -> None:
     """Test process_column với Polars DataFrame - basic case."""
     result = NarwhalsEngine.process_column(
         sample_polars_df, "weight", mock_inference_engine, "Extract weight"
@@ -79,7 +81,9 @@ def test_process_column_polars_basic(sample_polars_df: Any, mock_inference_engin
 
 
 @pytest.mark.skipif(not HAS_PANDAS, reason="pandas not installed")
-def test_process_column_pandas_basic(sample_pandas_df: Any, mock_inference_engine: Any) -> None:
+def test_process_column_pandas_basic(
+    sample_pandas_df: Any, mock_inference_engine: Any
+) -> None:
     """Test process_column với pandas DataFrame để verify multi-backend support."""
     result = NarwhalsEngine.process_column(
         sample_pandas_df, "weight", mock_inference_engine, "Extract weight"
@@ -98,7 +102,9 @@ def test_process_column_pandas_basic(sample_pandas_df: Any, mock_inference_engin
     assert len(result) == len(sample_pandas_df)
 
 
-def test_process_column_column_not_found(sample_polars_df: Any, mock_inference_engine: Any) -> None:
+def test_process_column_column_not_found(
+    sample_polars_df: Any, mock_inference_engine: Any
+) -> None:
     """Test validation khi column không tồn tại."""
     with pytest.raises(ValueError, match="Column 'nonexistent' not found"):
         NarwhalsEngine.process_column(
@@ -149,7 +155,9 @@ def test_process_column_batch_processing(mock_inference_engine: Any) -> None:
     assert "clean_unit" in result.columns
 
 
-def test_process_column_join_logic(sample_polars_df: Any, mock_inference_engine: Any) -> None:
+def test_process_column_join_logic(
+    sample_polars_df: Any, mock_inference_engine: Any
+) -> None:
     """Test join logic - verify mapping được join đúng."""
 
     # Custom mock để trả về kết quả cụ thể
