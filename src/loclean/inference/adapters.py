@@ -7,6 +7,10 @@ different models to use their native prompt formats (Phi-3, Qwen, Llama, etc.).
 from abc import ABC, abstractmethod
 from typing import Dict
 
+from jinja2 import Template
+
+from loclean.utils.resources import load_template
+
 
 class PromptAdapter(ABC):
     """
@@ -49,6 +53,11 @@ class Phi3Adapter(PromptAdapter):
     Uses the Phi-3 Instruct format with <|user|> and <|assistant|> tags.
     """
 
+    def __init__(self) -> None:
+        """Initialize Phi3Adapter and load template."""
+        template_str = load_template("phi3.j2")
+        self.template = Template(template_str)
+
     def format(self, instruction: str, item: str) -> str:
         """
         Format prompt in Phi-3 Instruct format.
@@ -60,20 +69,7 @@ class Phi3Adapter(PromptAdapter):
         Returns:
             Formatted prompt string in Phi-3 format.
         """
-        prompt = f"""<|user|>
-Task: {instruction}
-Input Item: "{item}"
-
-Step 1: Identify the unit of the Input Item (e.g., "$", "kg", "C").
-Step 2: Identify the target unit from the Task.
-Step 3: CRITICAL: If the units are physically the same
-(e.g., Input is USD and Target is USD), DO NOT MULTIPLY.
-The value must remain unchanged.
-Step 4: Only apply conversion formulas if units are different (e.g., EUR to USD).
-Step 5: Output JSON with keys "reasoning", "value", and "unit".
-<|end|>
-<|assistant|>"""
-        return prompt
+        return self.template.render(instruction=instruction, item=item)
 
     def get_stop_tokens(self) -> list[str]:
         """Get stop tokens for Phi-3 format."""
@@ -87,6 +83,14 @@ class QwenAdapter(PromptAdapter):
     Uses ChatML format with <|im_start|> and <|im_end|> tags.
     """
 
+    def __init__(self) -> None:
+        """Initialize QwenAdapter and load template."""
+        template_str = load_template("qwen.j2")
+        self.template = Template(template_str)
+        self.system_message = (
+            "You are a helpful assistant that extracts structured data from text."
+        )
+
     def format(self, instruction: str, item: str) -> str:
         """
         Format prompt in Qwen ChatML format.
@@ -98,21 +102,12 @@ class QwenAdapter(PromptAdapter):
         Returns:
             Formatted prompt string in Qwen ChatML format.
         """
-        prompt = f"""<|im_start|>user
-Task: {instruction}
-Input Item: "{item}"
-
-Step 1: Identify the unit of the Input Item (e.g., "$", "kg", "C").
-Step 2: Identify the target unit from the Task.
-Step 3: CRITICAL: If the units are physically the same
-(e.g., Input is USD and Target is USD), DO NOT MULTIPLY.
-The value must remain unchanged.
-Step 4: Only apply conversion formulas if units are different (e.g., EUR to USD).
-Step 5: Output JSON with keys "reasoning", "value", and "unit".
-<|im_end|>
-<|im_start|>assistant
-"""
-        return prompt
+        result = self.template.render(
+            instruction=instruction, item=item, system_message=self.system_message
+        )
+        if not result.endswith("\n"):
+            result += "\n"
+        return result
 
     def get_stop_tokens(self) -> list[str]:
         """Get stop tokens for Qwen ChatML format."""
@@ -126,6 +121,14 @@ class LlamaAdapter(PromptAdapter):
     Uses the Llama-3 instruction format with [INST] and [/INST] tags.
     """
 
+    def __init__(self) -> None:
+        """Initialize LlamaAdapter and load template."""
+        template_str = load_template("llama.j2")
+        self.template = Template(template_str)
+        self.system_message = (
+            "You are a helpful assistant that extracts structured data from text."
+        )
+
     def format(self, instruction: str, item: str) -> str:
         """
         Format prompt in Llama-3 instruction format.
@@ -137,28 +140,12 @@ class LlamaAdapter(PromptAdapter):
         Returns:
             Formatted prompt string in Llama-3 format.
         """
-        system_message = (
-            "You are a helpful assistant that extracts structured data from text."
+        result = self.template.render(
+            instruction=instruction, item=item, system_message=self.system_message
         )
-        user_message = f"""Task: {instruction}
-Input Item: "{item}"
-
-Step 1: Identify the unit of the Input Item (e.g., "$", "kg", "C").
-Step 2: Identify the target unit from the Task.
-Step 3: CRITICAL: If the units are physically the same
-(e.g., Input is USD and Target is USD), DO NOT MULTIPLY.
-The value must remain unchanged.
-Step 4: Only apply conversion formulas if units are different (e.g., EUR to USD).
-Step 5: Output JSON with keys "reasoning", "value", and "unit"."""
-
-        prompt = f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
-
-{system_message}<|eot_id|><|start_header_id|>user<|end_header_id|>
-
-{user_message}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
-
-"""
-        return prompt
+        # Ensure exactly 2 newlines at the end
+        result = result.rstrip() + "\n\n"
+        return result
 
     def get_stop_tokens(self) -> list[str]:
         """Get stop tokens for Llama-3 format."""
