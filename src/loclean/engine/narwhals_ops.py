@@ -106,9 +106,11 @@ class NarwhalsEngine:
             )
             return df_native
 
-        # Detect backend type to create mapping DataFrame with matching native type.
-        # This ensures type consistency and avoids unnecessary conversions.
+        # 4. Create Mapping DataFrame using the same native backend as the input
+        # Detect backend and create DataFrame with correct type
         native_df_cls = type(df_native)
+
+        # Try to detect backend by module name
         module_name = native_df_cls.__module__
 
         if "polars" in module_name:
@@ -147,6 +149,7 @@ class NarwhalsEngine:
                     }
                 )
             except (TypeError, ValueError):
+                # Last resort: use pandas and let Narwhals handle conversion
                 import pandas as pd
 
                 logger.warning(
