@@ -5,6 +5,7 @@ output generation. It supports both preset string-based grammars and dynamic
 Pydantic model-based grammars, with LRU caching for performance optimization.
 """
 
+import json
 from functools import lru_cache
 from typing import Type, Union
 
@@ -108,8 +109,10 @@ class GrammarRegistry:
         # Case 2: Pydantic BaseModel class
         if isinstance(schema, type) and issubclass(schema, BaseModel):
             # llama-cpp-python handles JSON Schema -> GBNF conversion internally
-            json_schema = schema.model_json_schema()
-            return LlamaGrammar.from_json_schema(json_schema)
+            # Convert dict to JSON string as required by from_json_schema
+            json_schema_dict = schema.model_json_schema()
+            json_schema_str = json.dumps(json_schema_dict)
+            return LlamaGrammar.from_json_schema(json_schema_str)
 
         raise TypeError(
             f"Schema must be a preset string or Pydantic BaseModel class, "
