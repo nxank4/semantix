@@ -91,13 +91,8 @@ class TestGrammarRegistry:
         """Test that LRU cache respects maxsize limit."""
         GrammarRegistry.clear_cache()
 
-        # Create a custom Pydantic model for testing
-        class TestModel(BaseModel):
-            field1: str
-
-        # Fill cache beyond maxsize (32)
+        # Fill cache beyond maxsize (32) using presets
         for i in range(35):
-            # Create unique model classes dynamically
             # Note: This is a simplified test - in practice, creating
             # 35 unique Pydantic models is complex, so we test with presets
             if i < len(GrammarRegistry.PRESETS):
