@@ -263,9 +263,7 @@ class NarwhalsEngine:
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             # Submit all tasks
             future_to_chunk = {
-                executor.submit(
-                    inference_engine.clean_batch, chunk, instruction
-                ): chunk
+                executor.submit(inference_engine.clean_batch, chunk, instruction): chunk
                 for chunk in chunks
             }
 
@@ -276,9 +274,9 @@ class NarwhalsEngine:
                 for future in as_completed(future_to_chunk):
                     chunk = future_to_chunk[future]
                     try:
-                        batch_result: Dict[
-                            str, Optional[Dict[str, Any]]
-                        ] = future.result()
+                        batch_result: Dict[str, Optional[Dict[str, Any]]] = (
+                            future.result()
+                        )
                         mapping_results.update(batch_result)
                         completed += 1
                         pbar.update(1)
