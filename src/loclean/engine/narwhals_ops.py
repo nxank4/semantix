@@ -81,7 +81,7 @@ class NarwhalsEngine:
         ]
 
         logger.info(
-            "🧠 Semantic Cleaning: Processing %d unique patterns in column '%s'.",
+            "Semantic Cleaning: Processing %d unique patterns in column '%s'.",
             len(uniques),
             col_name,
         )
