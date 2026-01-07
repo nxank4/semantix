@@ -25,6 +25,8 @@ class NarwhalsEngine:
         inference_engine: "LocalInferenceEngine",
         instruction: str,
         batch_size: int = 50,
+        parallel: bool = False,
+        max_workers: Optional[int] = None,
     ) -> IntoFrameT:
         """
         Clean a specific column using the inference engine with batching
@@ -36,6 +38,11 @@ class NarwhalsEngine:
             inference_engine: Inference engine instance for semantic extraction.
             instruction: Instruction to guide the LLM extraction.
             batch_size: Number of unique values to process per batch. Defaults to 50.
+            parallel: Enable parallel processing using ThreadPoolExecutor.
+                     Defaults to False for backward compatibility.
+            max_workers: Maximum number of worker threads. If None, auto-detected
+                        as min(cpu_count, len(chunks)). If 1, falls back to sequential.
+                        Defaults to None.
 
         Returns:
             DataFrame with added 'clean_value', 'clean_unit', and 'clean_reasoning'
@@ -83,16 +90,45 @@ class NarwhalsEngine:
         ]
 
         logger.info(
-            "🧠 Semantic Cleaning: Processing %d unique patterns in column '%s'.",
+            "Semantic Cleaning: Processing %d unique patterns in column '%s'.",
             len(uniques),
             col_name,
         )
 
-        for chunk in tqdm(chunks, desc="Inference Batches", unit="batch"):
-            batch_result: Dict[str, Optional[Dict[str, Any]]] = (
-                inference_engine.clean_batch(chunk, instruction=instruction)
+        if parallel and len(chunks) > 1:
+            # Determine number of workers
+            if max_workers is None:
+                cpu_count = os.cpu_count() or 1
+                max_workers = min(cpu_count, len(chunks))
+            elif max_workers <= 0:
+                logger.warning(
+                    f"Invalid max_workers={max_workers}. Falling back to sequential."
+                )
+                max_workers = 1
+
+            if max_workers == 1:
+                # Fallback to sequential if only 1 worker
+                parallel = False
+                logger.info("Using sequential processing (max_workers=1)")
+
+        if parallel and len(chunks) > 1:
+            # Parallel processing
+            logger.info(
+                f"Processing {len(chunks)} batches in parallel "
+                f"with {max_workers} workers"
             )
-            mapping_results.update(batch_result)
+            # max_workers is guaranteed to be int here (checked above)
+            assert isinstance(max_workers, int)
+            mapping_results = NarwhalsEngine._process_chunks_parallel(
+                chunks, inference_engine, instruction, max_workers
+            )
+        else:
+            # Sequential processing (default)
+            for chunk in tqdm(chunks, desc="Inference Batches", unit="batch"):
+                batch_result: Dict[str, Optional[Dict[str, Any]]] = (
+                    inference_engine.clean_batch(chunk, instruction=instruction)
+                )
+                mapping_results.update(batch_result)
 
         keys: List[str] = []
         clean_values: List[Optional[float]] = []
