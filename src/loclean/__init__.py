@@ -213,3 +213,120 @@ def scrub(
             locale,
             inference_engine=inference_engine,
         )
+
+
+def extract(
+    input_data: str | IntoFrameT,
+    schema: type[Any],
+    instruction: str | None = None,
+    *,
+    target_col: str | None = None,
+    output_type: str = "dict",
+    max_retries: int = 3,
+    model_name: Optional[str] = None,
+    cache_dir: Optional[Path] = None,
+    n_ctx: Optional[int] = None,
+    n_gpu_layers: Optional[int] = None,
+    **engine_kwargs: Any,
+) -> Any:
+    """
+    Extract structured data from text or DataFrame column using Pydantic schema.
+
+    Ensures 100% compliance with the provided Pydantic model through:
+    - Dynamic GBNF grammar generation from Pydantic schemas
+    - JSON repair for malformed outputs
+    - Retry logic with prompt adjustment on validation failures
+
+    Args:
+        input_data: String or DataFrame to extract from
+        schema: Pydantic BaseModel class defining the output structure
+        instruction: Optional custom instruction. If None, auto-generated from schema
+        target_col: Column name for DataFrame input (required for DataFrame)
+        output_type: Output format for DataFrame ("dict" or "pydantic"). Default: "dict"
+                   - "dict": Structured data (Polars Struct / Pandas dict) for optimal
+                             performance and vectorized operations
+                   - "pydantic": Pydantic model instances (slower, breaks vectorization)
+        max_retries: Maximum retry attempts on validation failure (default: 3)
+        model_name: Optional model identifier override
+        cache_dir: Optional custom cache directory
+        n_ctx: Optional context window size override
+        n_gpu_layers: Optional number of GPU layers to use (0 = CPU only)
+        **engine_kwargs: Additional arguments forwarded to inference engine
+
+    Returns:
+        For string input: Validated Pydantic model instance
+        For DataFrame input: DataFrame with added column `{target_col}_extracted`
+
+    Raises:
+        ValueError: If target_col is not provided for DataFrame input or schema is invalid
+        ValidationError: If extraction fails after max_retries attempts
+
+    Examples:
+        >>> from pydantic import BaseModel
+        >>> import loclean
+        >>> class Product(BaseModel):
+        ...     name: str
+        ...     price: int
+        ...     color: str
+        >>> # Extract from text
+        >>> item = loclean.extract("Bán cái áo thun đỏ giá 50k", schema=Product)
+        >>> print(item.name, item.price, item.color)
+        'áo thun' 50000 'đỏ'
+        >>> # Extract from DataFrame (default: structured dict for performance)
+        >>> import polars as pl
+        >>> df = pl.DataFrame({"description": ["Bán áo thun đỏ giá 50k"]})
+        >>> result = loclean.extract(df, schema=Product, target_col="description")
+        >>> # Query with Polars Struct
+        >>> result.filter(pl.col("description_extracted").struct.field("price") > 50000)
+    """
+    from pydantic import BaseModel
+
+    if not issubclass(schema, BaseModel):
+        raise ValueError(f"Schema must be a Pydantic BaseModel subclass, got {type(schema)}")
+
+    from loclean.cache import LocleanCache
+    from loclean.extraction.extract_dataframe import extract_dataframe
+    from loclean.extraction.extractor import Extractor
+
+    # Get or create inference engine
+    if (
+        model_name is None
+        and cache_dir is None
+        and n_ctx is None
+        and n_gpu_layers is None
+        and not engine_kwargs
+    ):
+        inference_engine = get_engine()
+        cache = inference_engine.cache if hasattr(inference_engine, "cache") else None
+    else:
+        inference_engine = LocalInferenceEngine(
+            cache_dir=cache_dir,
+            model_name=model_name,
+            n_ctx=n_ctx,
+            n_gpu_layers=n_gpu_layers,
+            **engine_kwargs,
+        )
+        cache = inference_engine.cache if hasattr(inference_engine, "cache") else None
+        if cache is None and cache_dir:
+            cache = LocleanCache(cache_dir=cache_dir)
+
+    if isinstance(input_data, str):
+        # String extraction
+        extractor = Extractor(
+            inference_engine=inference_engine, cache=cache, max_retries=max_retries
+        )
+        return extractor.extract(input_data, schema, instruction)
+    else:
+        # DataFrame extraction
+        if target_col is None:
+            raise ValueError("target_col required for DataFrame input")
+        return extract_dataframe(
+            input_data,
+            target_col,
+            schema,
+            instruction,
+            output_type=output_type,  # type: ignore[arg-type]
+            inference_engine=inference_engine,
+            cache=cache,
+            max_retries=max_retries,
+        )
