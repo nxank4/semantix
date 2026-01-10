@@ -160,14 +160,14 @@ def scrub(
 
     Examples:
         >>> import loclean
-        >>> text = "Liên hệ anh Nam số 0909123456"
+        >>> text = "Contact John at 555-1234"
         >>> loclean.scrub(text, strategies=["person", "phone"])
-        'Liên hệ [PERSON] số [PHONE]'
+        'Contact [PERSON] at [PHONE]'
 
         >>> loclean.scrub(
-        ...     text, strategies=["person", "phone"], mode="fake", locale="vi_VN"
+        ...     text, strategies=["person", "phone"], mode="fake", locale="en_US"
         ... )
-        'Liên hệ Nguyễn Văn A số 0912345678'
+        'Contact Jane Smith at 555-5678'
     """
     from loclean.privacy.scrub import scrub_dataframe, scrub_string
 

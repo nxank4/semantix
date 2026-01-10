@@ -42,13 +42,13 @@ class Product(BaseModel):
     color: str
 
 # Extract from text
-item = loclean.extract("Bán cái áo thun đỏ giá 50k", schema=Product)
-print(item.name)  # "áo thun"
+item = loclean.extract("Selling red t-shirt for 50k", schema=Product)
+print(item.name)  # "t-shirt"
 print(item.price)  # 50000
 
 # Extract from DataFrame (default: structured dict for performance)
 import polars as pl
-df = pl.DataFrame({"description": ["Bán áo thun đỏ giá 50k"]})
+df = pl.DataFrame({"description": ["Selling red t-shirt for 50k"]})
 result = loclean.extract(df, schema=Product, target_col="description")
 
 # Query with Polars Struct (vectorized operations)
@@ -177,7 +177,7 @@ The development of Loclean is organized into three phases, prioritizing MVP deli
 
 **Goal: Do things that Regex can never do.**
 
-* [ ] **Contextual Imputation**: Fill missing values based on context (e.g., seeing Zipcode 70000 -> Auto-fill City: TP.HCM).
+* [ ] **Contextual Imputation**: Fill missing values based on context (e.g., seeing Zipcode 10001 -> Auto-fill City: New York).
 * [ ] **Entity Canonicalization**: Group entities (Fuzzy matching + Semantic matching).
 * [ ] **Interactive CLI**: Terminal interface to review AI changes with low confidence.
 

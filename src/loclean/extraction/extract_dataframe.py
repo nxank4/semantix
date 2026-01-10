@@ -64,7 +64,7 @@ def extract_dataframe(
         >>> class Product(BaseModel):
         ...     name: str
         ...     price: int
-        >>> df = pl.DataFrame({"description": ["Bán áo thun đỏ giá 50k"]})
+        >>> df = pl.DataFrame({"description": ["Selling red t-shirt for 50k"]})
         >>> result = extract_dataframe(df, "description", Product)
         >>> # Query with Polars Struct
         >>> result.filter(pl.col("description_extracted").struct.field("price") > 50000)
