@@ -41,7 +41,7 @@ def test_get_grammar_from_schema_invalid_type() -> None:
 
 def test_get_grammar_from_schema_caching() -> None:
     """Test that grammar generation is cached."""
-    with patch("loclean.extraction.grammar_utils.LlamaGrammar") as mock_grammar_class:
+    with patch("llama_cpp.LlamaGrammar") as mock_grammar_class:
         mock_grammar = Mock()
         mock_grammar_class.from_json_schema.return_value = mock_grammar
 

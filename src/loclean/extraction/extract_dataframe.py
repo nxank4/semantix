@@ -221,13 +221,21 @@ def _create_polars_mapping_df(
             from typing import get_origin
 
             origin = get_origin(field_type)
-            if field_type is str or (origin is not None and str in getattr(field_type, "__args__", [])):
+            if field_type is str or (
+                origin is not None and str in getattr(field_type, "__args__", [])
+            ):
                 struct_fields[field_name] = pl.Utf8
-            elif field_type is int or (origin is not None and int in getattr(field_type, "__args__", [])):
+            elif field_type is int or (
+                origin is not None and int in getattr(field_type, "__args__", [])
+            ):
                 struct_fields[field_name] = pl.Int64
-            elif field_type is float or (origin is not None and float in getattr(field_type, "__args__", [])):
+            elif field_type is float or (
+                origin is not None and float in getattr(field_type, "__args__", [])
+            ):
                 struct_fields[field_name] = pl.Float64
-            elif field_type is bool or (origin is not None and bool in getattr(field_type, "__args__", [])):
+            elif field_type is bool or (
+                origin is not None and bool in getattr(field_type, "__args__", [])
+            ):
                 struct_fields[field_name] = pl.Boolean
             else:
                 # Fallback to Utf8 for complex types
