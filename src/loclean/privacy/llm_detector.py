@@ -57,9 +57,6 @@ class LLMDetector:
         if not llm_strategies:
             return [PIIDetectionResult(entities=[], reasoning=None) for _ in items]
 
-        # Build instruction from template
-        instruction = self.template.render(strategies=llm_strategies)
-
         # Check cache - use a consistent instruction key
         # We'll use a simple instruction string for caching
         cache_instruction = f"Detect {', '.join(llm_strategies)}"
