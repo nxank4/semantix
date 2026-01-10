@@ -164,4 +164,3 @@ def scrub_dataframe(
     )
 
     return df_nw.to_native()
-

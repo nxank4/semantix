@@ -61,4 +61,3 @@ class FakeDataGenerator:
         else:
             # Fallback to mask format
             return f"[{entity.type.upper()}]"
-

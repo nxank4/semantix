@@ -8,4 +8,3 @@ emails, credit cards, and addresses.
 from loclean.privacy.scrub import scrub_dataframe, scrub_string
 
 __all__ = ["scrub_dataframe", "scrub_string"]
-

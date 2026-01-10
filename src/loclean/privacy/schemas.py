@@ -26,4 +26,3 @@ class PIIDetectionResult(BaseModel):
 
     entities: list[PIIEntity]
     reasoning: str | None = None
-

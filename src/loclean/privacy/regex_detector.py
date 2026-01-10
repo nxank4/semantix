@@ -7,23 +7,23 @@ from typing import List
 from loclean.privacy.schemas import PIIEntity
 
 # Email pattern (RFC 5322 compliant, simplified)
-EMAIL_PATTERN = r'\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b'
+EMAIL_PATTERN = r"\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b"
 
 # Vietnamese phone patterns
 # Formats: 0909123456, 0912345678, +84901234567, 84901234567
-PHONE_PATTERN = r'\b(?:\+84|84|0)[3-9]\d{8,9}\b'
+PHONE_PATTERN = r"\b(?:\+84|84|0)[3-9]\d{8,9}\b"
 
 # Credit card patterns (Visa, MasterCard, Amex)
 # Visa: 13-16 digits starting with 4
 # MasterCard: 16 digits starting with 5
 # Amex: 15 digits starting with 34 or 37
-CREDIT_CARD_PATTERN = r'\b(?:\d{4}[-\s]?){3}\d{1,4}\b'
+CREDIT_CARD_PATTERN = r"\b(?:\d{4}[-\s]?){3}\d{1,4}\b"
 
 # IPv4 pattern
-IPV4_PATTERN = r'\b(?:\d{1,3}\.){3}\d{1,3}\b'
+IPV4_PATTERN = r"\b(?:\d{1,3}\.){3}\d{1,3}\b"
 
 # IPv6 pattern (RFC 4291 - simplified)
-IPV6_PATTERN = r'\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b|::1|::'
+IPV6_PATTERN = r"\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b|::1|::"
 
 
 class RegexDetector:
@@ -93,7 +93,7 @@ class RegexDetector:
         entities: List[PIIEntity] = []
         for match in re.finditer(CREDIT_CARD_PATTERN, text):
             # Remove separators for validation
-            card_number = re.sub(r'[-\s]', '', match.group())
+            card_number = re.sub(r"[-\s]", "", match.group())
             # Basic validation: check length and starting digits
             if len(card_number) >= 13 and len(card_number) <= 19:
                 entities.append(
@@ -152,4 +152,3 @@ class RegexDetector:
                 continue  # Invalid IP, skip
 
         return entities
-

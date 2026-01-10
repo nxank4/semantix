@@ -74,7 +74,9 @@ class LLMDetector:
                         result = PIIDetectionResult(**cached_data)
                         results.append(result)
                     except Exception as e:
-                        logger.warning(f"Failed to parse cached result for '{item}': {e}")
+                        logger.warning(
+                            f"Failed to parse cached result for '{item}': {e}"
+                        )
                         results.append(PIIDetectionResult(entities=[], reasoning=None))
                 else:
                     results.append(PIIDetectionResult(entities=[], reasoning=None))
@@ -139,10 +141,9 @@ class LLMDetector:
             for item in items:
                 try:
                     # Build instruction from template for this item
-                    instruction = self.template.render(
-                        strategies=strategies, item=item
-                    )
+                    instruction = self.template.render(strategies=strategies, item=item)
                     # Format prompt using adapter
+                    # The adapter expects instruction and item separately
                     prompt = self.inference_engine.adapter.format(instruction, item)
                     stop_tokens = self.inference_engine.adapter.get_stop_tokens()
 
@@ -185,4 +186,3 @@ class LLMDetector:
             results = [PIIDetectionResult(entities=[], reasoning=None) for _ in items]
 
         return results
-
