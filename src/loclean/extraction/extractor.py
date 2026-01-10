@@ -6,7 +6,7 @@ JSON repair, Pydantic validation, and retry logic to ensure 100% schema complian
 
 import json
 import logging
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, ValidationError
 
@@ -72,7 +72,9 @@ class Extractor:
             ValueError: If schema is not a Pydantic BaseModel subclass.
         """
         if not issubclass(schema, BaseModel):
-            raise ValueError(f"Schema must be a Pydantic BaseModel subclass, got {type(schema)}")
+            raise ValueError(
+                f"Schema must be a Pydantic BaseModel subclass, got {type(schema)}"
+            )
 
         # Build instruction
         final_instruction = self._build_instruction(schema, instruction)
@@ -85,14 +87,19 @@ class Extractor:
                 try:
                     return schema.model_validate(cached[text])
                 except ValidationError:
-                    logger.warning(f"Cache entry for '{text}' failed validation, recomputing")
+                    logger.warning(
+                        f"Cache entry for '{text}' failed validation, recomputing"
+                    )
 
         # Extract with retry
-        result = self._extract_with_retry(text, schema, final_instruction, retry_count=0)
+        result = self._extract_with_retry(
+            text, schema, final_instruction, retry_count=0
+        )
 
         if result is None:
             raise ValidationError(
-                f"Failed to extract valid {schema.__name__} from text after {self.max_retries} retries"
+                f"Failed to extract valid {schema.__name__} from text "
+                f"after {self.max_retries} retries"
             )
 
         # Cache result
@@ -136,7 +143,9 @@ class Extractor:
                     try:
                         results[item] = schema.model_validate(cached[item])
                     except ValidationError:
-                        logger.warning(f"Cache entry for '{item}' failed validation, recomputing")
+                        logger.warning(
+                            f"Cache entry for '{item}' failed validation, recomputing"
+                        )
                         misses.append(item)
                 else:
                     misses.append(item)
@@ -146,7 +155,9 @@ class Extractor:
         # Process misses
         for item in misses:
             try:
-                result = self._extract_with_retry(item, schema, final_instruction, retry_count=0)
+                result = self._extract_with_retry(
+                    item, schema, final_instruction, retry_count=0
+                )
                 results[item] = result
             except ValidationError as e:
                 logger.warning(f"Failed to extract from '{item}': {e}")
@@ -161,7 +172,9 @@ class Extractor:
                 if result is not None and item in misses
             }
             if valid_results:
-                self.cache.set_batch(list(valid_results.keys()), cache_key, valid_results)
+                self.cache.set_batch(
+                    list(valid_results.keys()), cache_key, valid_results
+                )
 
         return results
 
@@ -215,17 +228,23 @@ class Extractor:
                 if isinstance(output, dict) and "choices" in output:
                     text_output = str(output["choices"][0]["text"]).strip()
                 else:
-                    if hasattr(output, "__iter__") and not isinstance(output, (str, bytes)):
+                    if hasattr(output, "__iter__") and not isinstance(
+                        output, (str, bytes)
+                    ):
                         first_item = next(iter(output), None)
                         if isinstance(first_item, dict) and "choices" in first_item:
                             text_output = str(first_item["choices"][0]["text"]).strip()
 
                 if text_output is None:
                     logger.warning(f"No text extracted for '{text[:50]}...'")
-                    return self._retry_extraction(text, schema, instruction, retry_count)
+                    return self._retry_extraction(
+                        text, schema, instruction, retry_count
+                    )
 
                 # Parse and validate
-                return self._parse_and_validate(text_output, schema, text, instruction, retry_count)
+                return self._parse_and_validate(
+                    text_output, schema, text, instruction, retry_count
+                )
 
             else:
                 # Fallback: use inference engine's clean_batch method
@@ -240,7 +259,9 @@ class Extractor:
                     try:
                         return schema.model_validate(batch_results[text])
                     except ValidationError:
-                        return self._retry_extraction(text, schema, instruction, retry_count)
+                        return self._retry_extraction(
+                            text, schema, instruction, retry_count
+                        )
                 return self._retry_extraction(text, schema, instruction, retry_count)
 
         except Exception as e:
@@ -316,7 +337,9 @@ class Extractor:
             f"All required fields must be present and correctly typed."
         )
 
-        return self._extract_with_retry(text, schema, adjusted_instruction, retry_count + 1)
+        return self._extract_with_retry(
+            text, schema, adjusted_instruction, retry_count + 1
+        )
 
     def _build_instruction(
         self, schema: type[BaseModel], custom_instruction: str | None
@@ -342,7 +365,9 @@ class Extractor:
             f"All required fields must be present and correctly typed."
         )
 
-    def _get_cache_key(self, text: str, schema: type[BaseModel], instruction: str) -> str:
+    def _get_cache_key(
+        self, text: str, schema: type[BaseModel], instruction: str
+    ) -> str:
         """
         Generate cache key for extraction.
 

@@ -47,7 +47,9 @@ def get_grammar_from_schema(schema: type[BaseModel]) -> "LlamaGrammar":
         >>> # Grammar can now be used with LlamaCppEngine
     """
     if not issubclass(schema, BaseModel):
-        raise ValueError(f"Schema must be a Pydantic BaseModel subclass, got {type(schema)}")
+        raise ValueError(
+            f"Schema must be a Pydantic BaseModel subclass, got {type(schema)}"
+        )
 
     try:
         from llama_cpp import LlamaGrammar  # type: ignore[attr-defined]
