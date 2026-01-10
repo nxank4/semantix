@@ -141,7 +141,8 @@ def scrub(
         input_data: String or DataFrame to scrub
         strategies: List of PII types to detect.
                    Default: ["person", "phone", "email"]
-                   Options: "person", "phone", "email", "credit_card", "address", "ip_address"
+                   Options: "person", "phone", "email", "credit_card",
+                            "address", "ip_address"
         mode: "mask" (replace with [TYPE]) or "fake" (replace with fake data).
               Default: "mask"
         locale: Faker locale for fake data generation (default: "vi_VN").
@@ -163,7 +164,9 @@ def scrub(
         >>> loclean.scrub(text, strategies=["person", "phone"])
         'Liên hệ [PERSON] số [PHONE]'
 
-        >>> loclean.scrub(text, strategies=["person", "phone"], mode="fake", locale="vi_VN")
+        >>> loclean.scrub(
+        ...     text, strategies=["person", "phone"], mode="fake", locale="vi_VN"
+        ... )
         'Liên hệ Nguyễn Văn A số 0912345678'
     """
     from loclean.privacy.scrub import scrub_dataframe, scrub_string
