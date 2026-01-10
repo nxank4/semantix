@@ -217,25 +217,17 @@ def _create_polars_mapping_df(
         for field_name, field_info in schema.model_fields.items():
             field_type = field_info.annotation
             # Map Python types to Polars types
-            if field_type == str or (
-                hasattr(field_type, "__origin__")
-                and str in getattr(field_type, "__args__", [])
-            ):
+            # Use get_origin for generic types, direct comparison for simple types
+            from typing import get_origin
+
+            origin = get_origin(field_type)
+            if field_type is str or (origin is not None and str in getattr(field_type, "__args__", [])):
                 struct_fields[field_name] = pl.Utf8
-            elif field_type == int or (
-                hasattr(field_type, "__origin__")
-                and int in getattr(field_type, "__args__", [])
-            ):
+            elif field_type is int or (origin is not None and int in getattr(field_type, "__args__", [])):
                 struct_fields[field_name] = pl.Int64
-            elif field_type == float or (
-                hasattr(field_type, "__origin__")
-                and float in getattr(field_type, "__args__", [])
-            ):
+            elif field_type is float or (origin is not None and float in getattr(field_type, "__args__", [])):
                 struct_fields[field_name] = pl.Float64
-            elif field_type == bool or (
-                hasattr(field_type, "__origin__")
-                and bool in getattr(field_type, "__args__", [])
-            ):
+            elif field_type is bool or (origin is not None and bool in getattr(field_type, "__args__", [])):
                 struct_fields[field_name] = pl.Boolean
             else:
                 # Fallback to Utf8 for complex types
