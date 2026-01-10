@@ -21,12 +21,14 @@ def get_grammar_from_schema(schema: type[BaseModel]) -> "LlamaGrammar":
     """
     Convert a Pydantic schema to a GBNF grammar using JSON Schema.
 
-    This function leverages Pydantic's `model_json_schema()` to generate a JSON Schema,
-    then uses llama-cpp-python's `LlamaGrammar.from_json_schema()` to convert it to GBNF.
-    This approach automatically supports all Pydantic features including nested models,
-    Optional types, List types, Union types, Literal types, Annotated types, and more.
+    This function leverages Pydantic's `model_json_schema()` to generate a JSON
+    Schema, then uses llama-cpp-python's `LlamaGrammar.from_json_schema()` to
+    convert it to GBNF. This approach automatically supports all Pydantic features
+    including nested models, Optional types, List types, Union types, Literal types,
+    Annotated types, and more.
 
-    The result is cached using LRU cache to avoid recompiling the same grammar multiple times.
+    The result is cached using LRU cache to avoid recompiling the same grammar
+    multiple times.
 
     Args:
         schema: Pydantic BaseModel class to convert to GBNF grammar.

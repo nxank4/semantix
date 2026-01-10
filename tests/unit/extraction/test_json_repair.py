@@ -1,7 +1,5 @@
 """Tests for JSON repair functionality."""
 
-import pytest
-
 from loclean.extraction.json_repair import repair_json
 
 

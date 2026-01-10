@@ -122,10 +122,12 @@ class Extractor:
         Args:
             items: List of input texts to extract from.
             schema: Pydantic BaseModel class defining the output structure.
-            instruction: Optional custom instruction. If None, auto-generated from schema.
+            instruction: Optional custom instruction.
+                        If None, auto-generated from schema.
 
         Returns:
-            Dictionary mapping input_text -> BaseModel instance or None if extraction failed.
+            Dictionary mapping input_text -> BaseModel instance or None
+            if extraction failed.
         """
         if not items:
             return {}
@@ -334,7 +336,8 @@ class Extractor:
         # Adjust instruction to emphasize schema requirements
         adjusted_instruction = (
             f"{instruction}\n\n"
-            f"IMPORTANT: The output MUST strictly match the JSON Schema for {schema.__name__}. "
+            f"IMPORTANT: The output MUST strictly match the JSON Schema "
+            f"for {schema.__name__}. "
             f"All required fields must be present and correctly typed."
         )
 
