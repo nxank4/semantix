@@ -222,13 +222,17 @@ class TestLlamaCppEngine:
                             engine = LlamaCppEngine(cache_dir=temp_cache_dir)
                             expected_repo = engine.model_repo
                             expected_filename = engine.model_filename
+                            expected_model_name = engine.model_name
                             mock_download.reset_mock()
                             engine._get_model_path()
 
                             mock_download.assert_called_once_with(
+                                model_name=expected_model_name,
                                 repo_id=expected_repo,
                                 filename=expected_filename,
-                                local_dir=temp_cache_dir,
+                                cache_dir=temp_cache_dir,
+                                force=False,
+                                show_progress=True,
                             )
 
     def test_get_json_grammar(
