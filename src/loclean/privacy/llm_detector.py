@@ -78,8 +78,11 @@ class LLMDetector:
                         results.append(PIIDetectionResult(entities=[], reasoning=None))
                 else:
                     results.append(PIIDetectionResult(entities=[], reasoning=None))
+            else:
+                # Placeholder for misses - will be replaced below
+                results.append(PIIDetectionResult(entities=[], reasoning=None))
 
-            # Process misses using inference engine
+        # Process misses using inference engine
         if misses:
             logger.info(f"Cache miss for {len(misses)} items. Running LLM inference...")
 
@@ -98,8 +101,12 @@ class LLMDetector:
                     list(valid_results.keys()), cache_instruction, valid_results
                 )
 
-            # Add to results list
-            results.extend(batch_results)
+            # Replace placeholder results with actual results
+            miss_index = 0
+            for i, item in enumerate(items):
+                if item in misses:
+                    results[i] = batch_results[miss_index]
+                    miss_index += 1
 
         return results
 
