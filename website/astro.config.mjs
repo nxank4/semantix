@@ -50,63 +50,38 @@ export default defineConfig({
 				{
 					tag: 'script',
 					content: `
-						function updateLogos() {
+						function updateSidebarLogo() {
 							const theme = document.documentElement.getAttribute('data-theme') || 
 								(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 							
-							// Find all images that might be logos
-							const allImages = document.querySelectorAll('img');
+							// Only update sidebar logo (header logo), not hero images (handled by Starlight)
+							const sidebarLogos = document.querySelectorAll('header img[alt*="logo" i], .starlight-logo img, .title-wrapper img');
 							
-							allImages.forEach((img) => {
+							sidebarLogos.forEach((img) => {
 								let src = img.getAttribute('src') || img.src || '';
-								const alt = (img.getAttribute('alt') || '').toLowerCase();
 								
-								// Check if this is a logo image
-								const isLogo = src.includes('loclean-logo') || 
-								               alt.includes('logo') || 
-								               alt.includes('loclean');
-								
-								if (!isLogo) return;
-								
-								// Handle Astro image optimization URLs (_image?href=...)
+								// Skip Astro image optimization URLs (they cause errors)
 								if (src.includes('_image?href=')) {
-									// Extract the actual file path from the href parameter
-									const hrefMatch = src.match(/href=([^&]+)/);
-									if (hrefMatch) {
-										const decodedHref = decodeURIComponent(hrefMatch[1]);
-										// Check if it contains logo path
-										if (decodedHref.includes('loclean-logo')) {
-											let newHref = decodedHref;
-											if (theme === 'dark' && decodedHref.includes('for-light')) {
-												newHref = decodedHref.replace('for-light', 'for-dark');
-											} else if (theme === 'light' && decodedHref.includes('for-dark')) {
-												newHref = decodedHref.replace('for-dark', 'for-light');
-											}
-											
-											if (newHref !== decodedHref) {
-												// Reconstruct the URL with new href
-												const url = new URL(src, window.location.origin);
-												url.searchParams.set('href', encodeURIComponent(newHref));
-												img.src = url.toString();
-												img.setAttribute('src', img.src);
-											}
-										}
-									}
-								} else {
-									// Handle regular image URLs
-									// Extract base path (before query params)
-									const baseSrc = src.split('?')[0];
-									const queryString = src.includes('?') ? src.split('?').slice(1).join('?') : '';
-									
-									if (theme === 'dark' && baseSrc.includes('for-light')) {
-										const newSrc = baseSrc.replace('for-light', 'for-dark');
-										img.src = queryString ? newSrc + '?' + queryString : newSrc;
-										img.setAttribute('src', img.src);
-									} else if (theme === 'light' && baseSrc.includes('for-dark')) {
-										const newSrc = baseSrc.replace('for-dark', 'for-light');
-										img.src = queryString ? newSrc + '?' + queryString : newSrc;
-										img.setAttribute('src', img.src);
-									}
+									return;
+								}
+								
+								// Only process if it's a logo file
+								if (!src.includes('loclean-logo')) {
+									return;
+								}
+								
+								// Extract base path (before query params)
+								const baseSrc = src.split('?')[0];
+								const queryString = src.includes('?') ? src.split('?').slice(1).join('?') : '';
+								
+								if (theme === 'dark' && baseSrc.includes('for-light')) {
+									const newSrc = baseSrc.replace('for-light', 'for-dark');
+									img.src = queryString ? newSrc + '?' + queryString : newSrc;
+									img.setAttribute('src', img.src);
+								} else if (theme === 'light' && baseSrc.includes('for-dark')) {
+									const newSrc = baseSrc.replace('for-dark', 'for-light');
+									img.src = queryString ? newSrc + '?' + queryString : newSrc;
+									img.setAttribute('src', img.src);
 								}
 							});
 						}
@@ -136,12 +111,12 @@ export default defineConfig({
 						}
 						
 						// Run immediately
-						updateLogos();
+						updateSidebarLogo();
 						markOutputBlocks();
 						
 						// Watch for theme changes
 						const observer = new MutationObserver(() => {
-							setTimeout(updateLogos, 50);
+							setTimeout(updateSidebarLogo, 50);
 						});
 						observer.observe(document.documentElement, { 
 							attributes: true, 
@@ -153,21 +128,21 @@ export default defineConfig({
 							if (e.target.closest('[data-theme-toggle]') || 
 								e.target.closest('button[aria-label*="theme" i]') ||
 								e.target.closest('[aria-label*="theme" i]')) {
-								setTimeout(updateLogos, 150);
+								setTimeout(updateSidebarLogo, 150);
 							}
 						});
 						
 						// Run on DOM ready
 						if (document.readyState === 'loading') {
 							document.addEventListener('DOMContentLoaded', () => {
-								updateLogos();
+								updateSidebarLogo();
 								markOutputBlocks();
 							});
 						}
 						
 						// Run after a short delay to catch dynamically loaded content
 						setTimeout(() => {
-							updateLogos();
+							updateSidebarLogo();
 							markOutputBlocks();
 						}, 500);
 						
