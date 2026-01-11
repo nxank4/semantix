@@ -88,8 +88,33 @@ export default defineConfig({
 							});
 						}
 						
+						function markOutputBlocks() {
+							// Find all paragraphs containing "Output:" text
+							const paragraphs = Array.from(document.querySelectorAll('.sl-markdown-content p'));
+							
+							paragraphs.forEach((p) => {
+								const text = p.textContent || '';
+								if (text.includes('Output:') || text.includes('**Output:**')) {
+									// Find the next sibling that is a code block (Expressive Code or regular pre)
+									let nextSibling = p.nextElementSibling;
+									
+									// Check for Expressive Code blocks (figure.expressive-code)
+									if (nextSibling && nextSibling.classList.contains('expressive-code')) {
+										nextSibling.setAttribute('data-output', 'true');
+										nextSibling.classList.add('output-block');
+									}
+									// Check for regular pre blocks
+									else if (nextSibling && nextSibling.tagName === 'PRE') {
+										nextSibling.setAttribute('data-output', 'true');
+										nextSibling.classList.add('output-block');
+									}
+								}
+							});
+						}
+						
 						// Run immediately
 						updateLogos();
+						markOutputBlocks();
 						
 						// Watch for theme changes
 						const observer = new MutationObserver(() => {
@@ -111,11 +136,26 @@ export default defineConfig({
 						
 						// Run on DOM ready
 						if (document.readyState === 'loading') {
-							document.addEventListener('DOMContentLoaded', updateLogos);
+							document.addEventListener('DOMContentLoaded', () => {
+								updateLogos();
+								markOutputBlocks();
+							});
 						}
 						
 						// Run after a short delay to catch dynamically loaded content
-						setTimeout(updateLogos, 500);
+						setTimeout(() => {
+							updateLogos();
+							markOutputBlocks();
+						}, 500);
+						
+						// Watch for new content being added (for SPA navigation)
+						const contentObserver = new MutationObserver(() => {
+							markOutputBlocks();
+						});
+						contentObserver.observe(document.body, {
+							childList: true,
+							subtree: true
+						});
 					`,
 				},
 			],
