@@ -235,6 +235,8 @@ result = loclean.clean(
 )
 ```
 
+**Note:** Missing values result in `None` for `clean_value`, `clean_unit`, and `clean_reasoning`.
+
 ## Related Topics
 
 - [Quick Start Guide](/loclean/getting-started/quick-start/) - Basic usage examples
@@ -242,5 +244,3 @@ result = loclean.clean(
 - [Performance Optimization](/loclean/guides/performance/) - Tips for faster processing
 - [API Reference](/loclean/reference/api/) - Complete `clean()` function documentation
 - [Use Cases](/loclean/guides/use-cases/) - Real-world examples
-# Missing values result in None for clean_value, clean_unit, clean_reasoning
-```

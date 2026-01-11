@@ -136,8 +136,14 @@ print(result)
 ```
 
 **Output:**
+
+Text extraction:
 ```
 t-shirt 50000 red
+```
+
+DataFrame extraction:
+```
 shape: (1, 2)
 ┌─────────────────────────────┬──────────────────────────────────────┐
 │ description                 ┆ description_extracted                 │
