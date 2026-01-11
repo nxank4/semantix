@@ -11,15 +11,27 @@
 	--sl-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
-/* Logo theme switching */
-:root[data-theme="light"] .starlight-logo img,
-:root[data-theme="light"] .hero-image img {
-	content: url("../../assets/loclean-logo-for-light.svg");
+/* Logo theme switching - JavaScript handles src changes */
+.starlight-logo img,
+.hero-image img {
+	transition: opacity 0.2s ease;
 }
 
-:root[data-theme="dark"] .starlight-logo img,
-:root[data-theme="dark"] .hero-image img {
-	content: url("../../assets/loclean-logo-for-dark.svg");
+/* Ensure logo updates when theme changes */
+:root[data-theme="light"] .starlight-logo img[src*="for-dark"],
+:root[data-theme="light"] .hero-image img[src*="for-dark"] {
+	opacity: 0;
+	position: absolute;
+	width: 0;
+	height: 0;
+}
+
+:root[data-theme="dark"] .starlight-logo img[src*="for-light"],
+:root[data-theme="dark"] .hero-image img[src*="for-light"] {
+	opacity: 0;
+	position: absolute;
+	width: 0;
+	height: 0;
 }
 
 /* Text color for light/dark themes */
